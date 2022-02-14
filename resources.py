@@ -1,18 +1,27 @@
-from flask import request
+from flask import Response
 from flask_restful import Resource, abort
-from services.token_generator import HMACSignature
+from services.token_generator import HMACGenerator
 import requests
 import json
 
-class TokenGenerator(Resource):
-    def __init__(self):
-        self.key = "This is the first key ever"
-        self.encoded_key = str.encode(self.key)
+class SignatureGenerator(Resource):
+    
+    def generate(self, request, key):
+        try:
+            if not request.json:
+                return self.bad_request()
+            if 'signature' in request.json:
+                return self.bad_request()
+        except Exception as e:
+            print(e)
+            return self.bad_request()
         
-    def post(self):
-        input_msg = request.json.get('id')
-        if not input_msg:
-            return Response(u'Empty String Provided', mimetype= 'application/json', status=400)
-        hmac_instance = HMACSignature()
+        input_msg = request.json
         
-        return hmac_instance.get_signature(input_msg)
+        hmac_instance = HMACGenerator(key)
+        
+        input_msg.update(hmac_instance.get_signature(json.dumps(input_msg)))
+        return Response(json.dumps(input_msg), mimetype='application/json', status=200)
+    
+    def bad_request(self):
+        return Response('Incorrect data', mimetype= 'application/json', status=400)

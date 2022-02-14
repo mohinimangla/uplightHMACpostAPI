@@ -17,7 +17,7 @@ class Middleware():
             passPhrase = request.authorization.get('password')
         except Exception as e:
             print(e)
-            res = Response(u'Provide valid Authorization to send request', mimetype= 'text/plain', status=401)
+            res = Response('Unauthorized', mimetype= 'application/json', status=401)
             return res(environ, start_response)
         # these are hardcoded for demonstration
         # verify the username and password from some database or env config variable
@@ -25,5 +25,5 @@ class Middleware():
             environ['user'] = { 'name': userName }
             return self.app(environ, start_response)
 
-        res = Response(u'Authorization failed', mimetype= 'text/plain', status=401)
+        res = Response('Unauthorized', mimetype= 'application/json', status=401)
         return res(environ, start_response)
